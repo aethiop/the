@@ -232,10 +232,12 @@ const render = function (list) {
 			has = tmp[0][0] || tmp[0];
 
 			put = map.get(tmp[1] || "app") || "";
+			console.log(place);
 			if ((tmp = what.nextSibling) && "BR" === tmp.tagName) {
 				tmp.remove();
 			}
 			if (put) {
+				console.log("put", put);
 				put.insertAdjacentElement(place.abbr[has], what);
 			}
 			if (text) {
@@ -251,10 +253,14 @@ const render = function (list) {
 			what.fill = tmp;
 			var i = -1,
 				l = tmp.length;
-			/** while (++i < l) {
+			/**while (++i < l) {
 				tmp[i] = tmp[i] * 100 + "%";
 			}*/
 			what.style[text ? "color" : "background"] = "rgba(" + tmp + ")";
+		}
+		if (u !== (tmp = change.style)) {
+			what.style = tmp;
+			what.className = tmp;
 		}
 		// /*tmp! delete*/ if(!what.innerText && what.fill){ what.style.color = '#FFF'; what.style.padding = '0.25em'; } // TODO: DELETE!
 		if (u !== (put = change.away)) {
@@ -338,5 +344,5 @@ var perf = window.performance || {
 };
 map.set("app", document.getElementById("app"));
 map.set(1, window);
-
-export { the, breathe, render };
+setInterval(breathe, 0);
+export { the, view, place };

@@ -1,9 +1,7 @@
-import { the, breathe } from "./ariob";
+import { view, place } from "./flux";
 
-const view = the.view;
+const page = view({
+	style: "bg-black h-full text-white",
+});
 
-view.place({
-	fill: "Hello world!",
-}).into();
-
-setInterval(breathe, 0);
+place(page).into();
