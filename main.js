@@ -1,96 +1,52 @@
-import { view, place } from "./the";
+import { place, view } from "./the";
 import Gun from "gun";
 
-const gun = Gun({ peers: ["http://localhost:8765/gun"] });
-const app = gun.get("the_todo_test");
 
-const todoListData = app.get("todo_items");
-/* todoListData.put(null); */
+const gun = Gun({ peers: ["https://gun-manhattan.herokuapp.com/gun"] });
+const app = gun.get("the_test_data").get("app");
 
-const addTodoItem = (text, id) => {
-  if (!text) return;
-  const key = id || Math.random().toString(32).slice(-4);
-  const todoItem = view({
-    name: key,
-    tag: "li",
-    text: text,
-    style: "bg-gray-100 px-2 py-2 rounded-md mb-2 flex items-center",
-  });
-  place(todoItem).into(todoList);
-  return key;
-};
-/* */
-const appContainer = view({
-  style: "flex items-center justify-center h-screen",
+
+const homeScreen = view({
+  name: "home",
+  tag: "div",
+  style: "flex flex-col gap-4 bg-blue-100 items-center justify-center h-screen",
 });
 
-// Create a container for the todo list
-const todoContainer = view({
-  style: "max-w-md mx-auto bg-white py-6 px-4 rounded-xl font-sans",
-  on: {
-    mouseenter: () => {
-      todoContainer.style += " shadow-md";
-    },
-    mouseleave: () => {
-      todoContainer.style = todoContainer.style.replace("shadow-md", "");
-    },
-  },
-});
 
-const appTitle = view({
+
+const headerText = view({
+  name: "header",
   tag: "h1",
-  text: "What's the move?",
-  style: "text-4xl font-bold text-center p-4",
+  data: app,
+  text: "Hello World",
+  soul: "title",
+  style: "text-2xl font-bold text-",
 });
 
-// Create an input field for adding new todos
-const todoInput = view({
+const userInput = view({
+  data: app,
+  name: "input",
+  soul: "title",
   tag: "input",
   attrs: {
-    type: "text",
-    placeholder: "Enter a new todo",
+    placeholder: "Type anything...",
   },
-  on: {
-    keydown: (event) => {
-      if (event.key === "Enter") {
-        const id = addTodoItem(todoInput.value);
-        todoListData.set({ id: id, text: todoInput.value });
-        todoInput.value = "";
-      }
-    },
-  },
-  style:
-    "w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500",
+  style: "border-2 border-gray-300 rounded-2xl p-2",
 });
 
-// Create a button for adding new todos
-const addButton = view({
+const homeButton = view({
+  name: "home-button",
   tag: "button",
-  text: "Add Todo",
-  style:
-    "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500",
+  text: "Click Me!",
+  style: "bg-blue-500 text-white py-2 p-4 rounded-2xl",
   on: {
     click: () => {
-      const id = addTodoItem(todoInput.value);
-      todoListData.set({ id: id, text: todoInput.value });
-      todoInput.value = "";
+      console.log("Button Clicked");
     },
   },
 });
 
-// Create a list to hold the todo items
-const todoList = view({
-  tag: "ul",
-  style: "list-none p-4",
-});
-
-todoListData.map().on((data) => {
-  addTodoItem(data.text, data.id);
-});
-
-place(appContainer).into(); // Place the app container into the document
-place(todoContainer).into(appContainer); // Place the title, input, button, and list into the container
-place(appTitle).into(todoContainer);
-place(todoInput).into(todoContainer);
-place(todoList).into(todoContainer);
-place(addButton).into(todoContainer);
+place(homeScreen).into();
+place(headerText).into(homeScreen);
+place(userInput).into(homeScreen);
+place(homeButton).into(homeScreen);

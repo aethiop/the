@@ -7,6 +7,7 @@ var pid = Math.random().toString(32).slice(-4), // Unique process ID for naming
 var was = {}, // Stores last interaction states
 	stay = { fill: "" }; // Default styles or properties for elements
 
+
 // View function to manage and retrieve places with proxy functionality
 // View function to manage and retrieve places with proxy functionality
 var view = function (what) {
@@ -19,8 +20,7 @@ var view = function (what) {
 
 // Setup initial configurations
 places.set((the.view = view), { name: "app" });
-place = view.place = function (what, which, how, where) {
-	console.log({ what, how, where, which });
+place = function (what, which, how, where) {
 	if (!how) {
 		was.what = what;
 		was.how = how;
@@ -59,13 +59,12 @@ place = view.place = function (what, which, how, where) {
 			places.set(what, (a = new Proxy(a, place.ing)));
 		}
 	}
-	console.log({ a, b, msg });
-	a.gun = which;
 	msg.name = a.name || ((msg = what).name = pid + ++pi);
 	msg.sort = [how, (b || "").name];
 	share.set(msg.name, msg);
 	return a;
 };
+
 
 // Proxy handlers for dynamic property management
 place.ing = {
@@ -152,12 +151,8 @@ const render = function (list) {
 				gun.on((data) => {
 					const keys = Object.keys(data);
 					keys.forEach((key) => {
-						console.log(key);
-						if (key === change.key) {
-							if (change.tag === "input") {
-								return;
-							} else {
-								change.soul = data[key];
+						if (key === change.soul) {
+							if (change.tag !== "input") {
 								what.innerText = data[key];
 							}
 						}
@@ -182,9 +177,7 @@ const render = function (list) {
 		if (u !== (put = change.text)) {
 			what.innerText = put;
 		}
-		if (u !== (put = change.hear)) {
-			console.log({ change, name, what, has, put, text, tmp });
-		}
+
 		if (u !== (put = change.on)) {
 			for (var event in put) {
 				what.addEventListener(event, put[event]);
@@ -302,4 +295,5 @@ var perf = window.performance || {
 };
 map.set("app", document.getElementById("app"));
 map.set(1, window);
-export { the, view, place, breathe };
+breathe();
+export { view, place };

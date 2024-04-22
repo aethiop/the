@@ -1,3 +1,5 @@
+Here's an updated README that explains how to bind Gun data into views using the provided example:
+
 # the.js - Reactive UI Library
 
 the.js is a lightweight and reactive UI library for building dynamic web applications. It provides a simple and intuitive way to manage the application state, manipulate the DOM, and create interactive user interfaces.
@@ -11,6 +13,7 @@ the.js is a lightweight and reactive UI library for building dynamic web applica
 - Flexible element placement and positioning
 - Support for animations and transitions
 - Modular and extensible architecture
+- Integration with Gun.js for real-time data synchronization
 
 ## Installation
 
@@ -34,65 +37,72 @@ import { view, place } from "the";
 
 ## Usage
 
-Here's a more concrete example of how to use the.js to create a simple todo list application:
+Here's an example of how to use the.js with Gun.js to create a simple app with real-time data synchronization:
 
 ```javascript
-import { view, place } from "the";
+import { place, view } from "./the";
+import Gun from "gun";
 
-// Create a container for the todo list
-const todoContainer = view({
-  style: "bg-white p-4 rounded shadow",
+const gun = Gun({ peers: ["https://gun-manhattan.herokuapp.com/gun"] });
+const app = gun.get("the_test_data").get("app");
+
+const homeScreen = view({
+  name: "home",
+  tag: "div",
+  style: "flex flex-col gap-4 bg-blue-100 items-center justify-center h-screen",
 });
 
-// Create an input field for adding new todos
-const todoInput = view({
+const headerText = view({
+  name: "header",
+  tag: "h1",
+  data: app,
+  text: "Hello World",
+  soul: "title",
+  style: "text-2xl font-bold text-",
+});
+
+const userInput = view({
+  data: app,
+  name: "input",
+  soul: "title",
   tag: "input",
   attrs: {
-    type: "text",
-    placeholder: "Enter a new todo",
+    placeholder: "Type anything...",
   },
-  style: "border border-gray-300 p-2 mb-4 w-full",
+  style: "border-2 border-gray-300 rounded-2xl p-2",
 });
 
-// Create a button for adding new todos
-const addButton = view({
+const homeButton = view({
+  name: "home-button",
   tag: "button",
-  text: "Add Todo",
-  style: "bg-blue-500 text-white p-2 rounded",
+  text: "Click Me!",
+  style: "bg-blue-500 text-white py-2 p-4 rounded-2xl",
   on: {
     click: () => {
-      const todoText = todoInput.value;
-      if (todoText) {
-        const todoItem = view({
-          tag: "li",
-          text: todoText,
-          style: "mb-2",
-        });
-        place(todoItem).into(todoList);
-        todoInput.value = "";
-      }
+      console.log("Button Clicked");
     },
   },
 });
 
-// Create a list to hold the todo items
-const todoList = view({
-  tag: "ul",
-  style: "list-none",
-});
-
-// Place the input, button, and list into the container
-place(todoInput).into(todoContainer);
-place(addButton).into(todoContainer);
-place(todoList).into(todoContainer);
-
-// Place the todo container into the DOM
-place(todoContainer).into(document.body);
+place(homeScreen).into();
+place(headerText).into(homeScreen);
+place(userInput).into(homeScreen);
+place(homeButton).into(homeScreen);
 ```
 
-In this example, we create a todo list application using the.js. We start by creating a container view to hold the todo list. Then, we create an input field for entering new todos and a button for adding them to the list. We define a click event handler for the button that retrieves the todo text from the input field, creates a new todo item view, and places it into the todo list.
+In this example, we create a simple app using the.js and Gun.js. We start by creating a Gun instance and specifying the peer server URL. Then, we create a reference to the `app` node in the Gun database using `gun.get("the_test_data").get("app")`.
 
-Finally, we place the input field, button, and todo list into the container, and then place the container into the DOM using `place(todoContainer).into(document.body)`.
+Next, we create a `homeScreen` view to serve as the main container for our app. We define various child views such as `headerText`, `userInput`, and `homeButton`.
+
+To bind Gun data to a view, we use the `data` and `soul` properties. The `data` property specifies the Gun node to bind the data from, and the `soul` property specifies the key within that node to bind to.
+
+In the `headerText` view, we set `data: app` and `soul: "title"`. This means that the text content of the `headerText` view will be automatically updated whenever the value of `app.title` changes in the Gun database.
+
+Similarly, in the `userInput` view, we set `data: app` and `soul: "title"`. This binds the value of the input field to `app.title` in the Gun database. Whenever the user types into the input field, the value of `app.title` will be updated in real-time, and any other views bound to the same data will reflect the changes automatically.
+
+Finally, we place the views into the DOM using the `place` function, specifying the parent-child relationships between the views.
+
+With this setup, any changes made to the data in the Gun database will be automatically reflected in the corresponding views, and any user interactions with the views will update the data in real-time.
 
 ## API
 
@@ -106,6 +116,8 @@ Creates a new view with the specified options.
   - `attrs` (Object): The attributes to be set on the view element.
   - `style` (String): The CSS class names or inline styles for the view element.
   - `on` (Object): Event handlers to be attached to the view element.
+  - `data` (Gun.Chain): The Gun node to bind the data from.
+  - `soul` (String): The key within the Gun node to bind to.
 
 Returns a proxy object representing the view.
 

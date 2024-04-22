@@ -13,11 +13,6 @@
     "vite": "^5.2.0"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
-    "fs": "^0.0.1-security",
-    "gun": "^0.2020.1240",
-    "lodash": "^4.17.21",
-    "preact": "^10.20.2",
-    "react-native-udp": "^4.1.7"
+    "gun": "^0.2020.1240"
   }
 }
