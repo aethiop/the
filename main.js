@@ -1,14 +1,16 @@
-import { place, view } from "./the";
+import { place, view} from "./the";
 import Gun from "gun";
 import "gun/lib/path";
 
-const gun = Gun({ peers: ["http://localhost:8765/gun"] });
-const app = gun.get("the-test-app-4").get("app");
+const gun = Gun({ peers: ["https://gun-manhattan.herokuapp.com/gun"] });
+const app = gun.get("the-test-app-56dfg").get("app");
+
+
 const createTodo = (id, text) => {
 	const textContainer = view({
 		name: "text-container-" + id,
 		tag: "div",
-		style: "flex flex-row gap-2",
+		style: "flex flex-row gap-4 font-mono ",
 	});
 	const checkBox = view({
 		data: app,
@@ -17,28 +19,29 @@ const createTodo = (id, text) => {
 		attrs: {
 			type: "checkbox",
 		},
-		soul: "todoItems/" + id,
-		get: (data) => {
-			if (data) {
-				checkBox.checked = data.done;
-			}
+		soul: "todoItems/"+id,
+		get: (data, node) => {
+			node.map().on((data, key) => {
+				const { done } = data;
+				checkBox.checked = done;
+			})
 		},
 		input: (value, node) => {
 			node.get(id).put({ done: value });
 		},
-		style: "shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800",
+		style: "appeareance-none  w-4 h-4 shrink-0 mt-1.5 border-gray-200 rounded-2xl text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-199 border-neutral-700 checked:bg-blue-500 checked:border-blue-500 focus:ring-offset-gray-800",
 	});
 	const todoItem = view({
 		name: "todo-item-" + id,
 		tag: "li",
-		style: "flex items-center justify-between flex-row gap-2 bg-white p-2 rounded-2xl border-2 border-gray-300",
+		style: "flex items-center justify-between flex-row gap-8 bg-white px-4 py-2 rounded-2xl border-2 border-gray-300",
 	});
 
 	const todoText = view({
 		name: "todo-text-" + id,
 		tag: "p",
 		text: text,
-		style: "text-xl",
+		style: "text-lg",
 	});
 
 	const deleteButton = view({
@@ -47,18 +50,20 @@ const createTodo = (id, text) => {
 		text: "Delete",
 		data: app,
 		soul: "todoItems",
-		style: "bg-red-500 text-white py-2 p-4 rounded-full",
-		map: (data, node) => {
-			if (!data) return;
-			if (!data._["#"]) return;
-			const soul = data._["#"];
-			deleteButton.click = () => {
-				node.get(soul).put(null);
-				location.reload();
-			};
-		},
+		style: "bg-red-500 text-white py-2 p-4 rounded-2xl",
+    click: (node) => {
+    //   console.log(node)
+	  node.map().once((data, key) => {
+		if(!data) return
+		if (data.id === id) {
+			node.get(key).put(null)
+			place(todoItem).remove()
+			// location.reload()
+		}
+		
+	  })
+    },
 	});
-
 	place(todoItem).into(todoContainer);
 	place(textContainer).into(todoItem);
 	place(checkBox).into(textContainer);
@@ -77,9 +82,9 @@ const headerText = view({
 	tag: "h1",
 	action: "get",
 	data: app,
-	text: "Hello World",
+	text: "Todo List",
 	soul: "tt",
-	style: "text-2xl font-bold text-",
+	style: "text-2xl font-bold font-mono",
 });
 const userInput = view({
 	data: app,
@@ -92,19 +97,15 @@ const userInput = view({
 	},
 
 	attrs: {
-		placeholder: "Type anything...",
+		placeholder: "Enter Todo...",
 	},
-	style: "border-2 border-gray-300 rounded-2xl p-2",
+	style: "border-2 border-gray-300 rounded-xl p-2 w-full",
 });
 
-const homeButton = view({
-	name: "home-button",
-	tag: "button",
-	text: "Click Me!",
-	style: "bg-blue-500 text-white py-2 p-4 rounded-2xl",
-	click: () => {
-		console.log("Button Clicked");
-	},
+const horizontalLine = view({
+	name: "horizontal-line",
+	tag: "hr",
+	style: "w-full border-1 rounded-2xl",
 });
 
 const todoContainer = view({
@@ -112,26 +113,24 @@ const todoContainer = view({
 	tag: "ul",
 	soul: "todoItems",
 	data: app,
-	map: async (item, node) => {
-		// const todo = await node.get(item);
-		console.log("Item: ", item);
-		if (!item) return;
-
+	attrs: {
+		has: false,
+	},
+	map: (item, node) => {
+		if (!item) {
+			return
+		};
 		if (item.id && item.text) {
 			createTodo(item.id, item.text);
 		}
+
 	},
 	style: "flex flex-col gap-4 border-2 border-gray-300 rounded-2xl p-2",
 });
 
-if (headerText.value) {
-	console.log("Header Text Exists: ", headerText.value);
-	headerText.text = headerText.value;
-}
 place(homeScreen).into();
 place(headerText).into(homeScreen);
-place(userInput).into(homeScreen);
 place(todoContainer).into(homeScreen);
-place(homeButton).into(homeScreen);
+place(userInput).into(todoContainer);
+place(horizontalLine).into(todoContainer);
 
-console.log(headerText);

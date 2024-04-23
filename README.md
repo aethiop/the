@@ -1,175 +1,131 @@
-Here's an updated README that explains how to bind Gun data into views using the provided example:
+# the.js
 
-# the.js - Reactive UI Library
-
-the.js is a lightweight and reactive UI library for building dynamic web applications. It provides a simple and intuitive way to manage the application state, manipulate the DOM, and create interactive user interfaces.
-
-## Features
-
-- Reactive state management
-- Declarative UI rendering
-- Proxy-based property management
-- Dynamic style updates
-- Flexible element placement and positioning
-- Support for animations and transitions
-- Modular and extensible architecture
-- Integration with Gun.js for real-time data synchronization
+the.js is a lightweight JavaScript framework for building reactive user interfaces. It provides a simple and intuitive API for creating and manipulating DOM elements, handling user interactions, and managing application state.
 
 ## Installation
 
-To use the.js in your project, you can include the library file directly in your HTML:
+To use The.js in your project, include it via a script tag or import it as a module:
 
 ```html
 <script src="path/to/the.js"></script>
 ```
 
-Alternatively, you can install it via npm:
-
-```bash
-npm install the
-```
-
-And then import it in your JavaScript file:
+or
 
 ```javascript
-import { view, place } from "the";
+import { view, place } from 'the.js';
 ```
 
-## Usage
+## Creating Elements
 
-Here's an example of how to use the.js with Gun.js to create a simple app with real-time data synchronization:
+Create a new element using the `view` function:
 
 ```javascript
-import { place, view } from "./the";
-import Gun from "gun";
-
-const gun = Gun({ peers: ["https://gun-manhattan.herokuapp.com/gun"] });
-const app = gun.get("the_test_data").get("app");
-
-const homeScreen = view({
-  name: "home",
-  tag: "div",
-  style: "flex flex-col gap-4 bg-blue-100 items-center justify-center h-screen",
+const myElement = view({
+  name: 'my-element',
+  tag: 'div',
+  text: 'Hello, World!',
+  style: 'text-blue-500 font-bold',
 });
+```
 
-const headerText = view({
-  name: "header",
-  tag: "h1",
-  data: app,
-  text: "Hello World",
-  soul: "title",
-  style: "text-2xl font-bold text-",
-});
+## Placing Elements
 
-const userInput = view({
-  data: app,
-  name: "input",
-  soul: "title",
-  tag: "input",
-  attrs: {
-    placeholder: "Type anything...",
-  },
-  style: "border-2 border-gray-300 rounded-2xl p-2",
-});
+Place an element in the DOM using the `place` function:
 
-const homeButton = view({
-  name: "home-button",
-  tag: "button",
-  text: "Click Me!",
-  style: "bg-blue-500 text-white py-2 p-4 rounded-2xl",
+```javascript
+place(myElement).into(parentElement);
+```
+
+Other placement methods:
+- `before(referenceElement)`
+- `after(referenceElement)`
+- `begin(parentElement)`
+- `remove()`
+
+## Updating Elements
+
+Update element properties by modifying them directly:
+
+```javascript
+myElement.text = 'Updated text';
+myElement.style = 'text-red-500';
+```
+
+## Handling Events
+
+Handle events on an element using the `on` property:
+
+```javascript
+const myButton = view({
+  name: 'my-button',
+  tag: 'button',
+  text: 'Click me',
+  style: 'bg-blue-500 text-white px-4 py-2 rounded',
   on: {
     click: () => {
-      console.log("Button Clicked");
+      console.log('Button clicked!');
     },
   },
 });
-
-place(homeScreen).into();
-place(headerText).into(homeScreen);
-place(userInput).into(homeScreen);
-place(homeButton).into(homeScreen);
 ```
 
-In this example, we create a simple app using the.js and Gun.js. We start by creating a Gun instance and specifying the peer server URL. Then, we create a reference to the `app` node in the Gun database using `gun.get("the_test_data").get("app")`.
+## Data Binding
 
-Next, we create a `homeScreen` view to serve as the main container for our app. We define various child views such as `headerText`, `userInput`, and `homeButton`.
+Bind data to an element using the `data` and `soul` properties:
 
-To bind Gun data to a view, we use the `data` and `soul` properties. The `data` property specifies the Gun node to bind the data from, and the `soul` property specifies the key within that node to bind to.
+```javascript
+const myInput = view({
+  name: 'my-input',
+  tag: 'input',
+  style: 'border border-gray-300 px-2 py-1 rounded',
+  data: app,
+  soul: 'inputValue',
+  input: (value, node) => {
+    node.put({ value: value });
+  },
+});
+```
 
-In the `headerText` view, we set `data: app` and `soul: "title"`. This means that the text content of the `headerText` view will be automatically updated whenever the value of `app.title` changes in the Gun database.
+## Retrieving Data
 
-Similarly, in the `userInput` view, we set `data: app` and `soul: "title"`. This binds the value of the input field to `app.title` in the Gun database. Whenever the user types into the input field, the value of `app.title` will be updated in real-time, and any other views bound to the same data will reflect the changes automatically.
+Retrieve data from a node using the `get` property:
 
-Finally, we place the views into the DOM using the `place` function, specifying the parent-child relationships between the views.
+```javascript
+const myElement = view({
+  name: 'my-element',
+  tag: 'div',
+  data: app,
+  soul: 'myData',
+  get: (data, node) => {
+    node.on((data) => {
+      myElement.text = data.value;
+    });
+  },
+});
+```
 
-With this setup, any changes made to the data in the Gun database will be automatically reflected in the corresponding views, and any user interactions with the views will update the data in real-time.
+## Mapping Data
 
-## API
+Map data to elements using the `map` property:
 
-### `view(options)`
-
-Creates a new view with the specified options.
-
-- `options` (Object): An object containing the view options.
-  - `tag` (String): The HTML tag name for the view element.
-  - `text` (String): The text content of the view element.
-  - `attrs` (Object): The attributes to be set on the view element.
-  - `style` (String): The CSS class names or inline styles for the view element.
-  - `on` (Object): Event handlers to be attached to the view element.
-  - `data` (Gun.Chain): The Gun node to bind the data from.
-  - `soul` (String): The key within the Gun node to bind to.
-
-Returns a proxy object representing the view.
-
-### `place(what, how, where)`
-
-Places an element or view into the DOM.
-
-- `what` (Element|View): The element or view to be placed.
-- `how` (Number|String): The placement method. Can be one of the following:
-  - `-1`: Before the target element.
-  - `-0.1`: As the first child of the target element.
-  - `0.1`: As the last child of the target element.
-  - `1`: After the target element.
-- `where` (Element|View): The target element or view where the `what` should be placed.
-
-Returns the placed element or view.
-
-### `place.begin(on)`
-
-Places the last `what` as the first child of the specified target.
-
-- `on` (Element|View): The target element or view.
-
-Returns the placed element or view.
-
-### `place.after(on)`
-
-Places the last `what` after the specified target.
-
-- `on` (Element|View): The target element or view.
-
-Returns the placed element or view.
-
-### `place.before(on)`
-
-Places the last `what` before the specified target.
-
-- `on` (Element|View): The target element or view.
-
-Returns the placed element or view.
-
-### `place.into(on)`
-
-Places the last `what` as the last child of the specified target.
-
-- `on` (Element|View): The target element or view.
-
-Returns the placed element or view.
-
-## Contributing
-
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository.
+```javascript
+const myList = view({
+  name: 'my-list',
+  tag: 'ul',
+  style: 'list-disc pl-6',
+  data: app,
+  soul: 'myItems',
+  map: (item, node) => {
+    const listItem = view({
+      name: 'list-item',
+      tag: 'li',
+      text: item.text,
+    });
+    place(listItem).into(myList);
+  },
+});
+```
 
 ## License
 

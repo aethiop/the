@@ -4,10 +4,8 @@ var pid = Math.random().toString(32).slice(-4), // Unique process ID for naming
 	places = new Map(), // Stores references to all the places (DOM elements or proxies)
 	place, // Function to manage placement of elements
 	the = { aim: {}, key: {} }; // General purpose object for storing application specific settings
-var was = {}, // Stores last interaction states
-	stay = { fill: "" }; // Default styles or properties for elements
+var was = {};// Stores last interaction states
 
-// View function to manage and retrieve places with proxy functionality
 // View function to manage and retrieve places with proxy functionality
 var view = function (what) {
 	return (
@@ -19,13 +17,6 @@ var view = function (what) {
 
 // Setup initial configurations
 places.set((the.view = view), { name: "app" });
-const remove = function (what) {
-	var element = places.get(what);
-	if (element) {
-		element.parentNode.removeChild(element);
-		places.delete(what);
-	}
-};
 place = function (what, which, how, where) {
 	if (!how) {
 		was.what = what;
@@ -98,6 +89,7 @@ place.abbr = {
 	"-0.1": "afterbegin",
 	0.1: "beforeend",
 	1: "afterend",
+	9: "remove",
 	"%": "%",
 	"~": "em",
 	".": "px",
@@ -107,16 +99,19 @@ place.abbr = {
 // Additional placement functions leveraging the `place` logic
 place.place = place;
 place.begin = function (on) {
-	return place(was.what, -0.1, on);
+	return place(was.what, was.which, -0.1, on);
 };
 place.after = function (on) {
-	return place(was.what, 1, on);
+	return place(was.what, was.which, 1, on);
 };
 place.before = function (on) {
-	return place(was.what, -1, on);
+	return place(was.what, was.which, -1, on);
 };
 place.into = function (on) {
 	return place(was.what, was.which, 0.1, on);
+};
+place.remove = function (on) {
+	return place(was.what, was.which, 9, on);
 };
 
 // Rendering and dynamic style updates
@@ -134,7 +129,7 @@ const render = function (list) {
 		if (!(what = map.get(name))) {
 			map.set(name, (what = document.createElement(change.tag || "div")));
 			what.name = name;
-			what.id = "v" + name.replace(/\W/gi, "");
+			what.id = name.replace(/\W/gi, "");
 			what.turn = [0, 0, 0];
 			what.grab = [0, 0, 0];
 			what.zoom = [1, 1, 1];
@@ -176,31 +171,6 @@ const render = function (list) {
 						change.map(data, gun);
 					});
 			}
-			if (change.data && change.data.on) {
-				let gun = change.data;
-				// if (change.action == "get") {
-				// 	gun.get(change.soul).once((data) => {
-				// 		console.log(data);
-				// 		change.value = data[change.soul];
-				// 	});
-				// }
-				// 	const action = change.action;
-				// 	if (action == "put") {
-				// 		gun.put({ [change.soul]: change.value });
-				// 	} else if (action == "set") {
-				// 		gun.set({ [change.soul]: change.value });
-				// 	} else if (action == "get") {
-				// 		console.log("Getting data");
-
-				// 	} else if (action == "map") {
-				// 		gun.get(change.soul)
-				// 			.map()
-				// 			.on((data) => {
-				// 				change.value = data;
-				// 			});
-				// 	}
-				// }
-			}
 		}
 
 		if (u !== (put = change.value)) {
@@ -232,8 +202,13 @@ const render = function (list) {
 		if (u !== (tmp = change.sort)) {
 			has = tmp[0][0] || tmp[0];
 			put = map.get(tmp[1] || "app") || "";
+			
 			if (put) {
-				put.insertAdjacentElement(place.abbr[has], what);
+				if (has === 9) {
+					what.remove();
+				} else {
+					put.insertAdjacentElement(place.abbr[has], what);
+				}
 			}
 		}
 		if (u !== (put = change.grab)) {
@@ -268,13 +243,13 @@ const render = function (list) {
 			}
 			change.t = 1;
 		}
-		if (u !== (put = change.get)) {
+		if (u !== (put = change.get)) {				
 			let gun = change.data.get(change.soul);
 			gun.on((data) => {
 				change.get(data, gun);
 			});
 		}
-
+		
 		if (u !== (put = change.map)) {
 			let gun = change.data.get(change.soul);
 			gun.map().on((data) => {
