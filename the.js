@@ -7,7 +7,6 @@ var pid = Math.random().toString(32).slice(-4), // Unique process ID for naming
 var was = {}, // Stores last interaction states
 	stay = { fill: "" }; // Default styles or properties for elements
 
-
 // View function to manage and retrieve places with proxy functionality
 // View function to manage and retrieve places with proxy functionality
 var view = function (what) {
@@ -20,6 +19,13 @@ var view = function (what) {
 
 // Setup initial configurations
 places.set((the.view = view), { name: "app" });
+const remove = function (what) {
+	var element = places.get(what);
+	if (element) {
+		element.parentNode.removeChild(element);
+		places.delete(what);
+	}
+};
 place = function (what, which, how, where) {
 	if (!how) {
 		was.what = what;
@@ -64,7 +70,6 @@ place = function (what, which, how, where) {
 	share.set(msg.name, msg);
 	return a;
 };
-
 
 // Proxy handlers for dynamic property management
 place.ing = {
@@ -139,29 +144,70 @@ const render = function (list) {
 			// Create a value property for input elements
 			if (change.tag === "input") {
 				what.value = "";
-				what.addEventListener("input", () => {
-					change.value = what.value;
-					if (change.data) {
-						change.data.put({ [change.soul]: change.value });
+				what.addEventListener("input", (e) => {
+					const gun = change.data.get(change.soul);
+
+					if (what.type === "checkbox") {
+						change.input && change.input(e.target.checked, gun);
+					} else {
+						change.input && change.input(e.target.value, gun);
 					}
 				});
+				what.addEventListener("keydown", (e) => {
+					if (e.key === "Enter") {
+						const gun = change.data.get(change.soul);
+						change.enter(e.target.value, gun);
+						what.value = "";
+					}
+				});
+				what.addEventListener("checked", (e) => {});
+			}
+			if (change.tag === "button") {
+				what.addEventListener("click", (e) => {
+					const gun = change.data.get(change.soul);
+					change.click(gun);
+				});
+			}
+			if (change.map) {
+				let gun = change.data.get(change.soul);
+				gun.get(change.soul)
+					.map()
+					.on((data) => {
+						change.map(data, gun);
+					});
 			}
 			if (change.data && change.data.on) {
 				let gun = change.data;
-				gun.on((data) => {
-					const keys = Object.keys(data);
-					keys.forEach((key) => {
-						if (key === change.soul) {
-							if (change.tag !== "input") {
-								what.innerText = data[key];
-							}
-						}
-					});
-				});
+				// if (change.action == "get") {
+				// 	gun.get(change.soul).once((data) => {
+				// 		console.log(data);
+				// 		change.value = data[change.soul];
+				// 	});
+				// }
+				// 	const action = change.action;
+				// 	if (action == "put") {
+				// 		gun.put({ [change.soul]: change.value });
+				// 	} else if (action == "set") {
+				// 		gun.set({ [change.soul]: change.value });
+				// 	} else if (action == "get") {
+				// 		console.log("Getting data");
+
+				// 	} else if (action == "map") {
+				// 		gun.get(change.soul)
+				// 			.map()
+				// 			.on((data) => {
+				// 				change.value = data;
+				// 			});
+				// 	}
+				// }
 			}
 		}
+
 		if (u !== (put = change.value)) {
 			what.value = put;
+		}
+		if (u !== (put = change.checked)) {
+			what.checked = put;
 		}
 		if (u !== (put = change.time)) {
 			what.style.transitionDuration = put + "s";
@@ -222,6 +268,20 @@ const render = function (list) {
 			}
 			change.t = 1;
 		}
+		if (u !== (put = change.get)) {
+			let gun = change.data.get(change.soul);
+			gun.on((data) => {
+				change.get(data, gun);
+			});
+		}
+
+		if (u !== (put = change.map)) {
+			let gun = change.data.get(change.soul);
+			gun.map().on((data) => {
+				change.map(data, gun);
+			});
+		}
+
 		if (change.t) {
 			tmp = what.style.transform =
 				"translate3d(" +
